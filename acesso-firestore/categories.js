@@ -15,6 +15,55 @@ const findAll = async () => {
     return categories
 }
 
+const findAllPaginated = async ({ pageSize = 10, startAfter = '' }) => {
+
+    const categoriesDB = await db
+        .collection('categories')
+        .orderBy('category')
+        .startAfter(startAfter)
+        .limit(pageSize + 1)
+        .get()
+    if (categoriesDB.empty) {
+        return {
+            data: [],
+            total: 0
+        }
+    }
+    const categories = []
+    let total = 0
+    categoriesDB.forEach(doc => {
+        if (total < pageSize) {
+            categories.push({
+                ...doc.data(),
+                id: doc.id
+            })
+        }
+        total++
+    })
+    //console.log(total, pageSize)
+    return {
+        data: categories,
+        total: categories.length,
+        hasNext: total > pageSize,
+        startAfter: total > pageSize ? categories[categories.length-1].category : 'SmartTVs'
+    }
+    categories.then(snapshot => {
+        console.log('is empty', snapshot.empty)
+        let total = 0
+        snapshot.forEach(doc => {
+            if (total < pageSize) {
+                console.log(doc.id, ' => ', doc.data())
+            }
+            total++
+        })
+        if (total > pageSize) {
+            console.log('hasNext')
+        } else {
+            console.log('doest have next')
+        }
+    })
+}
+
 const remove = async (id) => {
     const doc = db.collection('categories').doc(id)
     await doc.delete()
@@ -25,13 +74,14 @@ const create = async (data) => {
     await doc.set(data)
 }
 
-const update = async(id, data) => {
+const update = async (id, data) => {
     const doc = db.collection('categories').doc(id)
     await doc.update(data)
 }
 
 module.exports = {
     findAll,
+    findAllPaginated,
     remove,
     create,
     update
