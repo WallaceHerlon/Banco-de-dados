@@ -47,21 +47,6 @@ const findAllPaginated = async ({ pageSize = 10, startAfter = '' }) => {
         hasNext: total > pageSize,
         startAfter: total > pageSize ? categories[categories.length-1].category : 'SmartTVs'
     }
-    categories.then(snapshot => {
-        console.log('is empty', snapshot.empty)
-        let total = 0
-        snapshot.forEach(doc => {
-            if (total < pageSize) {
-                console.log(doc.id, ' => ', doc.data())
-            }
-            total++
-        })
-        if (total > pageSize) {
-            console.log('hasNext')
-        } else {
-            console.log('doest have next')
-        }
-    })
 }
 
 const remove = async (id) => {
