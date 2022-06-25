@@ -25,12 +25,13 @@ const init = database => {
     const findAllPaginated = async ({ pageSize = 1, currentPage = 0 }) => {
             const dbConn = await db.init(database)
             const records = await db.query(dbConn, `SELECT * FROM  categories LIMIT  ${currentPage * pageSize}, ${pageSize + 1}`)
+            const hasNext = records.length > pageSize
             if (records.length > pageSize) {
                 records.pop()
             }
             return {
                 data: records,
-                hasNext: records.length > pageSize
+                hasNext
             }
         }
     return {
