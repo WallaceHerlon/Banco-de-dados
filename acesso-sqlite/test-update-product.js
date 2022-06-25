@@ -18,12 +18,13 @@ const run = (db, query, values) => new Promise((resolve, reject) => {
         }
     })
 })
-const removeCategories = async () => {
+const updateProducts = async () => {
     const db = await initDB('banco.sqlite3')
-    await run(db, `DELETE FROM categories WHERE id=?`, [8])
-
-    console.log('Categories remove!')
+    await run(db, `UPDATE products SET product=? WHERE id=?`, ['prod atualizado', 8])
+    // lembrete: apagar tudo de categories_products, adicionar o que ficou
+    // ou remover somente quem foi removido, ou adicionar quem foi adicionado. 
+    console.log('Products updated!')
 }
-removeCategories().catch(err => {
+updateProducts().catch(err => {
     console.log(err)
 })

@@ -22,7 +22,7 @@ const updateCategories = async () => {
     const db = await initDB('banco.sqlite3')
     await run(db, `UPDATE categories SET category=? WHERE id=?`, ['cat atualizada', 8])
 
-    console.log('Categoriescreated!')
+    console.log('Categories update!')
 }
 updateCategories().catch(err => {
     console.log(err)
