@@ -27,7 +27,14 @@ const migration = async () => {
     await initMigration(connection)
 
     const currentVersion = await getCurrentVersion(connection)
-    const targetVersion = 100
+    let targetVersion = 1000
+    // parametros
+    if (process.argv.length > 2) {
+        if (process.argv[2] === '--target-version' && process.argv[3]) {
+            targetVersion = parseInt(process.argv[3])
+        }
+    }
+    console.log('Migrating to: ', targetVersion)
 
     const migrations = fs.readdirSync('./migrations')
     const migrationSorted = migrations
@@ -42,6 +49,14 @@ const migration = async () => {
             return -1
         })
 
+    const migrationSorted2 = [...migrationSorted].sort((a, b) => {
+        if (a > b) {
+            return -1
+        }
+        return 1
+    })
+
+    // up
     for await (const migration of migrationSorted) {
         if (migration > currentVersion && targetVersion >= migration) {
             const m = require('./migrations/' + migration + '.js')
@@ -53,6 +68,21 @@ const migration = async () => {
             await connection.query('COMMIT;')
         }
     }
+    // down
+    for await (const migration of migrationSorted2) {
+        if (migration <= currentVersion && targetVersion < migration) {
+            const m = require('./migrations/' + migration + '.js')
+            await connection.query('START TRANSACTION;')
+            if (m.down) {
+                await m.down(connection)
+                console.log('Migration DOWN:', migration)
+            }
+            const currentMigration = migrationSorted2[migrationSorted2.indexOf(migration) + 1] || 0
+            await connection.query('UPDATE migration_version SET version = ? WHERE id = ?', [currentMigration, 1])
+            await connection.query('COMMIT;')
+        }
+    }
+    await connection.close()
 }
 
 migration()
